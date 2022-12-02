@@ -1,1 +1,1 @@
-# os-assignment-2
+# CPU Scheduling Simulator
