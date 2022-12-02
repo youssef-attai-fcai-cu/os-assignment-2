@@ -1,8 +1,8 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public abstract class CPUScheduler {
-    protected final List<Process> processes = new ArrayList<>();
+    protected final Queue<Process> processes = new LinkedList<>();
 
     public abstract void start();
 }
