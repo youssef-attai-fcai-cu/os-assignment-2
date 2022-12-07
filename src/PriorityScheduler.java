@@ -11,11 +11,11 @@ public class PriorityScheduler extends CPUScheduler {
 
     @Override
     protected void step(List<Process> processes) {
-//        Check if a process arrived and that it has higher priority than other processes in the queue,
-//        if so, push it to the process queue
+//        Check if a process arrived and push it to the process queue
         for (Process p : processes) {
             if (p.arrivalTime == this.currentTime) {
                 this.processes.add(p);
+//                Sort by priority
                 sortByPriority(this.processes);
 //                System.out.println(p.name + " has arrived");
             }
@@ -27,7 +27,12 @@ public class PriorityScheduler extends CPUScheduler {
         assert currentRunningProcess != null;
 
 //        If the current process has just started at this point in time
-        if (this.executionOrder.size() == 0 || !currentRunningProcess.name.equals(this.executionOrder.get(this.executionOrder.size() - 1).getProcessName())) {
+        if (
+                this.executionOrder.size() == 0 ||
+                        !currentRunningProcess.name.equals(
+                                this.executionOrder.get(this.executionOrder.size() - 1).getProcessName()
+                        )
+        ) {
 //            Update the end of the last added interval
             if (this.executionOrder.size() > 0)
                 this.executionOrder.get(this.executionOrder.size() - 1).setEnd(this.currentTime);
@@ -58,11 +63,6 @@ public class PriorityScheduler extends CPUScheduler {
         processes.clear();
         Collections.reverse(ps);
         processes.addAll(ps);
-    }
-
-    private void printReadyQueue() {
-        for (Process pp : this.processes) System.out.print(pp.name + " ");
-        System.out.println();
     }
 
 }

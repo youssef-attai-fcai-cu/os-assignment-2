@@ -34,7 +34,7 @@ public class CPUSchedulersSimulator {
     }
 
     private static void simulateRoundRobinScheduling(List<Process> allProcesses) {
-        CPUScheduler rrScheduler = new RoundRobinScheduler(3, 0);
+        CPUScheduler rrScheduler = new RoundRobinScheduler(3);
 
         rrScheduler.start(allProcesses);
 

@@ -14,11 +14,18 @@ public abstract class CPUScheduler {
     public void start(List<Process> processes) {
 //        System.out.println("Scheduling started");
         do {
-//            System.out.println("  At time " + this.currentTime + ":");
+            System.out.println("===============================");
+            System.out.println("time: " + this.currentTime + ":");
+            System.out.println("================================");
             this.step(processes);
             this.currentTime++;
         } while (processes.size() != this.finished);
     }
 
     protected abstract void step(List<Process> processes);
+    public void printReadyQueue() {
+        System.out.print("Ready queue: ");
+        for (Process pp : this.processes) System.out.print(pp.name + " ");
+        System.out.println();
+    }
 }
