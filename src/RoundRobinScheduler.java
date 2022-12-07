@@ -3,7 +3,7 @@ import java.util.List;
 public class RoundRobinScheduler extends CPUScheduler {
     private final int Q;
     private int counter;
-    private int contextSwitchingTime;
+    private final int contextSwitchingTime;
 
     public RoundRobinScheduler(int q, int contextSwitchingTime) {
         this.Q = q;
@@ -14,11 +14,12 @@ public class RoundRobinScheduler extends CPUScheduler {
     @Override
     protected void step(List<Process> processes) {
 //        Check if a process arrived, if so, push it to the process queue
-        for (Process p : processes)
+        for (Process p : processes) {
             if (p.arrivalTime == this.currentTime) {
                 System.out.println(p.name + " has arrived");
                 this.processes.add(p);
             }
+        }
 
 //        Get the current running process
         Process currentRunningProcess = this.processes.peek();
@@ -41,30 +42,37 @@ public class RoundRobinScheduler extends CPUScheduler {
 
 //        Update the remaining time of the process at the top of the process queue
         currentRunningProcess.remainingTime--;
-        System.out.println(currentRunningProcess.name + "'s remaining time: " + currentRunningProcess.remainingTime);
+        //System.out.println(currentRunningProcess.name + "'s remaining time: " + currentRunningProcess.remainingTime);
+        this.counter--;
+        //System.out.println("Q counter: " + this.counter);
 
-        boolean switched = false;
+        Process removed = null;
         if (currentRunningProcess.remainingTime == 0) {
-            System.out.println(currentRunningProcess.name +
-                    "has finished execution and has been removed from the process queue");
-            this.processes.poll();
+            //System.out.println(currentRunningProcess.name +
+//                    " has finished execution and has been removed from the process queue");
+            currentRunningProcess.turnAroundTime = currentTime - currentRunningProcess.arrivalTime + 1;
+            currentRunningProcess.waitingTime = currentRunningProcess.turnAroundTime - currentRunningProcess.burstTime;
+            removed = this.processes.poll();
             this.switching = true;
-            this.finished++;
+            if (!(removed instanceof ContextSwitching))
+                this.finished++;
             this.counter = Q;
-            System.out.println(this.finished + " processes are finished");
+            //System.out.println(this.finished + " processes are finished");
         }
         if (this.counter == 0 && currentRunningProcess.remainingTime > 0) {
-            System.out.println("RR timeout, pushing " + currentRunningProcess.name + " to the back of the queue");
+            //System.out.println("RR timeout, pushing " + currentRunningProcess.name + " to the back of the queue");
 //            If the RR Q has passed, poll the current process and push it back to the queue
             currentRunningProcess = this.processes.poll();
+            removed = currentRunningProcess;
             this.switching = true;
             this.processes.add(currentRunningProcess);
             assert this.processes.peek() != null;
-            System.out.println(this.processes.peek().name + " is next");
+            //System.out.println(this.processes.peek().name + " is next");
             this.counter = Q;
         }
 
-        this.counter--;
-        System.out.println("Q counter: " + this.counter);
+        if (this.switching && !(removed instanceof ContextSwitching) && this.contextSwitchingTime != 0) {
+            this.processes.push(new ContextSwitching(this.currentTime + 1, this.contextSwitchingTime));
+        }
     }
 }

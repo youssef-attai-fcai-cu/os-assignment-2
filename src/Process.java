@@ -12,7 +12,8 @@ public class Process {
         this.arrivalTime = arrivalTime;
         this.burstTime = burstTime;
         this.priority = priority;
-
+        this.waitingTime = 0;
+        this.turnAroundTime = 0;
         this.remainingTime = this.burstTime;
     }
 }
