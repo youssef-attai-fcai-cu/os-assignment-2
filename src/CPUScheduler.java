@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class CPUScheduler {
-    protected final Deque<Process> processes = new LinkedList<>();
+    protected final Deque<Process> readyQueue = new LinkedList<>();
 
     protected int currentTime = 0;
     protected int finished = 0;
@@ -14,18 +14,19 @@ public abstract class CPUScheduler {
     public void start(List<Process> processes) {
 //        System.out.println("Scheduling started");
         do {
-            System.out.println("===============================");
-            System.out.println("time: " + this.currentTime + ":");
-            System.out.println("================================");
+//            System.out.println("===============================");
+//            System.out.println("time: " + this.currentTime + ":");
+//            System.out.println("================================");
             this.step(processes);
             this.currentTime++;
         } while (processes.size() != this.finished);
     }
 
     protected abstract void step(List<Process> processes);
+
     public void printReadyQueue() {
         System.out.print("Ready queue: ");
-        for (Process pp : this.processes) System.out.print(pp.name + " ");
+        for (Process pp : this.readyQueue) System.out.print(pp.name + ", " + pp.priority + "| ");
         System.out.println();
     }
 }

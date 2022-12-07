@@ -3,11 +3,10 @@ import java.util.List;
 public class CPUSchedulersSimulator {
     public static void main(String[] args) {
         simulatePriorityScheduling(List.of(
-                new Process("P1", 0, 11, 2),
-                new Process("P2", 5, 28, 4),
-                new Process("P3", 12, 2, 1),
-                new Process("P4", 2, 10, 3),
-                new Process("P5", 9, 16, 0)
+                new Process("A", 0, 200, 2),
+                new Process("B", 1, 200, 1),
+                new Process("C", 2, 200, 0),
+                new Process("D", 3, 10, 3)
         ));
         simulateRoundRobinScheduling(List.of(
                 new Process("A", 0, 2, 0),
@@ -19,7 +18,7 @@ public class CPUSchedulersSimulator {
     }
 
     private static void simulatePriorityScheduling(List<Process> allProcesses) {
-        CPUScheduler pScheduler = new PriorityScheduler();
+        CPUScheduler pScheduler = new PriorityScheduler(15);
 
         pScheduler.start(allProcesses);
 

@@ -2,6 +2,12 @@ import java.util.*;
 
 public class PriorityScheduler extends CPUScheduler {
 
+    public final int agingThreshold;
+
+    public PriorityScheduler(int agingThreshold) {
+        this.agingThreshold = agingThreshold;
+    }
+
     @Override
     public void start(List<Process> processes) {
         super.start(processes);
@@ -14,16 +20,16 @@ public class PriorityScheduler extends CPUScheduler {
 //        Check if a process arrived and push it to the process queue
         for (Process p : processes) {
             if (p.arrivalTime == this.currentTime) {
-                this.processes.add(p);
+                this.readyQueue.add(p);
 //                Sort by priority
-                sortByPriority(this.processes);
+                sortByPriority(this.readyQueue);
 //                System.out.println(p.name + " has arrived");
             }
         }
 //        printReadyQueue();
 
 //        Get the current running process
-        Process currentRunningProcess = this.processes.peek();
+        Process currentRunningProcess = this.readyQueue.peek();
         assert currentRunningProcess != null;
 
 //        If the current process has just started at this point in time
@@ -46,6 +52,11 @@ public class PriorityScheduler extends CPUScheduler {
                 this.executionOrder.get(this.executionOrder.size() - 1).setEnd(this.currentTime);
         }
 
+//        Increase age waiting for all processes except currently processing
+        for (Process p : this.readyQueue)
+            if (p != currentRunningProcess)
+                p.ageWait++;
+
 //        Update the remaining time of the process at the top of the process queue
         currentRunningProcess.remainingTime--;
 //        System.out.println("Process " + currentRunningProcess.name + " remaining time: " + currentRunningProcess.remainingTime);
@@ -53,15 +64,19 @@ public class PriorityScheduler extends CPUScheduler {
         if (currentRunningProcess.remainingTime == 0) {
             currentRunningProcess.turnAroundTime = currentTime - currentRunningProcess.arrivalTime + 1;
             currentRunningProcess.waitingTime = currentRunningProcess.turnAroundTime - currentRunningProcess.burstTime;
-            this.processes.poll();
+            this.readyQueue.poll();
             this.finished++;
+        }
+
+        for (Process p : this.readyQueue) {
+            p.age(this.agingThreshold);
         }
     }
 
     private void sortByPriority(Deque<Process> processes) {
         List<Process> ps = new ArrayList<>(processes.stream().sorted(Comparator.comparingInt(o -> o.priority)).toList());
         processes.clear();
-        Collections.reverse(ps);
+//        Collections.reverse(ps);
         processes.addAll(ps);
     }
 
