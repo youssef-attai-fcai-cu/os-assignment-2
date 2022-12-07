@@ -30,7 +30,7 @@ public abstract class CPUScheduler {
     }
 
     public void addContextSwitching(int contextSwitchingTime) {
-        for (int i = 1; i < this.executionOrder.size() - 1; i++) {
+        for (int i = 1; i < this.executionOrder.size(); i++) {
             this.executionOrder.get(i).setStart(this.executionOrder.get(i).getStart() + contextSwitchingTime * i);
             this.executionOrder.get(i).setEnd(this.executionOrder.get(i).getEnd() + contextSwitchingTime * i);
         }

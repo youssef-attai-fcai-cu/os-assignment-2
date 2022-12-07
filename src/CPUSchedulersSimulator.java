@@ -43,7 +43,7 @@ public class CPUSchedulersSimulator {
         CPUScheduler sjfScheduler = new ShortestJobFirstScheduler();
 
         sjfScheduler.start(allProcesses);
-//        rrScheduler.addContextSwitching(1);
+        sjfScheduler.addContextSwitching(1);
 
         for (Interval interval : sjfScheduler.executionOrder) {
             System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] " + interval.getEnd() + " | ");
