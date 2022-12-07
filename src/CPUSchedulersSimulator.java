@@ -2,12 +2,18 @@ import java.util.List;
 
 public class CPUSchedulersSimulator {
     public static void main(String[] args) {
+        simulateShortestJobFirstScheduling(List.of(
+                new Process("A", 0, 10, 0),
+                new Process("B", 1, 8, 0),
+                new Process("C", 2, 6, 0),
+                new Process("D", 3, 4, 0),
+                new Process("E", 4, 2, 0)
+        ));
         simulatePriorityScheduling(List.of(
-                new Process("P1", 0, 11, 2),
-                new Process("P2", 5, 28, 4),
-                new Process("P3", 12, 2, 1),
-                new Process("P4", 2, 10, 3),
-                new Process("P5", 9, 16, 0)
+                new Process("A", 0, 200, 2),
+                new Process("B", 1, 200, 1),
+                new Process("C", 2, 200, 0),
+                new Process("D", 3, 10, 3)
         ));
         simulateRoundRobinScheduling(List.of(
                 new Process("A", 0, 2, 0),
@@ -19,7 +25,7 @@ public class CPUSchedulersSimulator {
     }
 
     private static void simulatePriorityScheduling(List<Process> allProcesses) {
-        CPUScheduler pScheduler = new PriorityScheduler();
+        CPUScheduler pScheduler = new PriorityScheduler(15);
 
         pScheduler.start(allProcesses);
 
@@ -33,13 +39,29 @@ public class CPUSchedulersSimulator {
         calculateTurnAround(allProcesses);
     }
 
+    private static void simulateShortestJobFirstScheduling(List<Process> allProcesses) {
+        CPUScheduler sjfScheduler = new ShortestJobFirstScheduler();
+
+        sjfScheduler.start(allProcesses);
+        sjfScheduler.addContextSwitching(1);
+
+        for (Interval interval : sjfScheduler.executionOrder) {
+            System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] " + interval.getEnd() + " | ");
+        }
+        System.out.println(sjfScheduler.executionOrder.get(sjfScheduler.executionOrder.size() - 1).getEnd());
+
+        calculateWaitingTime(allProcesses);
+        calculateTurnAround(allProcesses);
+    }
+
     private static void simulateRoundRobinScheduling(List<Process> allProcesses) {
-        CPUScheduler rrScheduler = new RoundRobinScheduler(3, 0);
+        CPUScheduler rrScheduler = new RoundRobinScheduler(3);
 
         rrScheduler.start(allProcesses);
+        rrScheduler.addContextSwitching(1);
 
         for (Interval interval : rrScheduler.executionOrder) {
-            System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] ");
+            System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] " + interval.getEnd() + " | ");
         }
         System.out.println(rrScheduler.executionOrder.get(rrScheduler.executionOrder.size() - 1).getEnd());
 

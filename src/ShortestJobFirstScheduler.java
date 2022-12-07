@@ -1,14 +1,9 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.List;
 
-public class PriorityScheduler extends CPUScheduler {
-
-    public final int agingThreshold;
-
-    public PriorityScheduler(int agingThreshold) {
-        this.agingThreshold = agingThreshold;
-    }
-
-    @Override
+public class ShortestJobFirstScheduler extends CPUScheduler {
     public void start(List<Process> processes) {
         super.start(processes);
         if (this.executionOrder.size() > 0)
@@ -22,7 +17,7 @@ public class PriorityScheduler extends CPUScheduler {
             if (p.arrivalTime == this.currentTime) {
                 this.readyQueue.add(p);
 //                Sort by priority
-                sortByPriority(this.readyQueue);
+                sortByRemainingTime(this.readyQueue);
 //                System.out.println(p.name + " has arrived");
             }
         }
@@ -33,12 +28,7 @@ public class PriorityScheduler extends CPUScheduler {
         assert currentRunningProcess != null;
 
 //        If the current process has just started at this point in time
-        if (
-                this.executionOrder.size() == 0 ||
-                        !currentRunningProcess.name.equals(
-                                this.executionOrder.get(this.executionOrder.size() - 1).getProcessName()
-                        )
-        ) {
+        if (this.executionOrder.size() == 0 || !currentRunningProcess.name.equals(this.executionOrder.get(this.executionOrder.size() - 1).getProcessName())) {
 //            Update the end of the last added interval
             if (this.executionOrder.size() > 0)
                 this.executionOrder.get(this.executionOrder.size() - 1).setEnd(this.currentTime);
@@ -51,12 +41,6 @@ public class PriorityScheduler extends CPUScheduler {
             if (this.executionOrder.size() > 0)
                 this.executionOrder.get(this.executionOrder.size() - 1).setEnd(this.currentTime);
         }
-
-//        Increase age waiting for all processes except currently processing
-        for (Process p : this.readyQueue)
-            if (p != currentRunningProcess)
-                p.ageWait++;
-
 //        Update the remaining time of the process at the top of the process queue
         currentRunningProcess.remainingTime--;
 //        System.out.println("Process " + currentRunningProcess.name + " remaining time: " + currentRunningProcess.remainingTime);
@@ -68,16 +52,12 @@ public class PriorityScheduler extends CPUScheduler {
             this.finished++;
         }
 
-        for (Process p : this.readyQueue) {
-            p.age(this.agingThreshold);
-        }
     }
 
-    private void sortByPriority(Deque<Process> processes) {
-        List<Process> ps = new ArrayList<>(processes.stream().sorted(Comparator.comparingInt(o -> o.priority)).toList());
+    private void sortByRemainingTime(Deque<Process> processes) {
+        List<Process> ps = new ArrayList<>(processes.stream().sorted(Comparator.comparingInt(o -> o.remainingTime)).toList());
         processes.clear();
 //        Collections.reverse(ps);
         processes.addAll(ps);
     }
-
 }
