@@ -16,27 +16,26 @@ public class RoundRobinScheduler extends CPUScheduler {
 
     @Override
     protected void step(List<Process> processes) {
-
 //        Check if a process arrived and push it to the process queue
         for (Process p : processes) {
             if (p.arrivalTime == this.currentTime) {
                 this.readyQueue.add(p);
-//                System.out.println(p.name + " has arrived");
+                System.out.println(p.name + " has arrived");
             }
         }
 
         if (this.counter == this.Q) {
-//            System.out.println("RR timeout");
+            System.out.println("RR timeout");
             this.readyQueue.add(this.readyQueue.poll());
             this.counter = 0;
         }
 
-//        printReadyQueue();
+        printReadyQueue();
 
 //        Get the current running process
         Process currentRunningProcess = this.readyQueue.peek();
         assert currentRunningProcess != null;
-//        System.out.println("Currently processing: " + currentRunningProcess.name);
+        System.out.println("Currently processing: " + currentRunningProcess.name);
 
         if (
 //                If this is the first process
@@ -62,16 +61,16 @@ public class RoundRobinScheduler extends CPUScheduler {
 //        Update the remaining time of the process at the top of the process queue
         currentRunningProcess.remainingTime--;
         this.counter++;
-//        System.out.println(currentRunningProcess.name + " remaining time: " + currentRunningProcess.remainingTime);
-//        System.out.println("counter: " + this.counter);
-//        System.out.println("Process " + currentRunningProcess.name + " remaining time: " + currentRunningProcess.remainingTime);
+        System.out.println(currentRunningProcess.name + " remaining time: " + currentRunningProcess.remainingTime);
+        System.out.println("counter: " + this.counter);
+        System.out.println("Process " + currentRunningProcess.name + " remaining time: " + currentRunningProcess.remainingTime);
 
         if (currentRunningProcess.remainingTime == 0) {
             currentRunningProcess.turnAroundTime = currentTime - currentRunningProcess.arrivalTime + 1;
             currentRunningProcess.waitingTime = currentRunningProcess.turnAroundTime - currentRunningProcess.burstTime;
-            this.readyQueue.poll();
-//            assert done != null;
-//            System.out.println(done.name + " is done");
+            Process done = this.readyQueue.poll();
+            assert done != null;
+            System.out.println(done.name + " is done");
             this.counter = 0;
             this.finished++;
         }

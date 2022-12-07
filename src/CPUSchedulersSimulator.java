@@ -36,9 +36,10 @@ public class CPUSchedulersSimulator {
         CPUScheduler rrScheduler = new RoundRobinScheduler(3);
 
         rrScheduler.start(allProcesses);
+        rrScheduler.addContextSwitching(1);
 
         for (Interval interval : rrScheduler.executionOrder) {
-            System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] ");
+            System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] " + interval.getEnd() + " | ");
         }
         System.out.println(rrScheduler.executionOrder.get(rrScheduler.executionOrder.size() - 1).getEnd());
 
