@@ -2,6 +2,13 @@ import java.util.List;
 
 public class CPUSchedulersSimulator {
     public static void main(String[] args) {
+        simulateFirstComeFirstServeScheduling(List.of(
+                new Process("A", 0, 10, 0),
+                new Process("B", 1, 8, 0),
+                new Process("C", 2, 6, 0),
+                new Process("D", 3, 4, 0),
+                new Process("E", 4, 2, 0)
+        ));
         simulateShortestJobFirstScheduling(List.of(
                 new Process("A", 0, 10, 0),
                 new Process("B", 1, 8, 0),
@@ -22,6 +29,21 @@ public class CPUSchedulersSimulator {
                 new Process("D", 6, 8, 0),
                 new Process("E", 8, 10, 0)
         ));
+    }
+
+    private static void simulateFirstComeFirstServeScheduling(List<Process> allProcesses) {
+        CPUScheduler fcfsScheduler = new FirstComeFirstServeScheduler();
+
+        fcfsScheduler.start(allProcesses);
+
+        for (Interval interval : fcfsScheduler.executionOrder) {
+            System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] ");
+        }
+        if (fcfsScheduler.executionOrder.size() > 0)
+            System.out.println(fcfsScheduler.executionOrder.get(fcfsScheduler.executionOrder.size() - 1).getEnd());
+
+        calculateWaitingTime(allProcesses);
+        calculateTurnAround(allProcesses);
     }
 
     private static void simulatePriorityScheduling(List<Process> allProcesses) {
