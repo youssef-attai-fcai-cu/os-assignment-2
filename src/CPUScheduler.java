@@ -13,8 +13,8 @@ public abstract class CPUScheduler {
     public void start(List<Process> processes) {
 //        System.out.println("Scheduling started");
         do {
-//            System.out.println("=======================");
-//            System.out.println("time: " + this.currentTime + ":");
+            System.out.println("=======================");
+            System.out.println("time " + this.currentTime + ":");
 //            System.out.println("=======================");
             this.step(processes);
             this.currentTime++;
