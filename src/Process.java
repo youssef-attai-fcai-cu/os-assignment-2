@@ -7,12 +7,28 @@ public class Process {
     public int waitingTime;
     public int turnAroundTime;
     public int ageWait = 0;
+    public int quantum;
+    public int varQuantum;
 
     public Process(String name, int arrivalTime, int burstTime, int priority) {
         this.name = name;
         this.arrivalTime = arrivalTime;
         this.burstTime = burstTime;
         this.priority = priority;
+        this.quantum = 0;
+        this.varQuantum = 0;
+        this.waitingTime = 0;
+        this.turnAroundTime = 0;
+        this.remainingTime = this.burstTime;
+    }
+
+    public Process(String name, int arrivalTime, int burstTime, int priority, int quantum) {
+        this.name = name;
+        this.arrivalTime = arrivalTime;
+        this.burstTime = burstTime;
+        this.priority = priority;
+        this.quantum = quantum;
+        this.varQuantum = 0;
         this.waitingTime = 0;
         this.turnAroundTime = 0;
         this.remainingTime = this.burstTime;
@@ -23,5 +39,9 @@ public class Process {
             this.priority--;
             this.ageWait = 0;
         }
+    }
+
+    public void setQuantum(int quantum) {
+        this.quantum = quantum;
     }
 }
