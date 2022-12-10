@@ -2,13 +2,7 @@ import java.util.List;
 
 public class CPUSchedulersSimulator {
     public static void main(String[] args) {
-        simulateAGScheduling(List.of(
-                new Process("P1",  0,17, 4, 7),
-                new Process("P2", 2,6,  7, 9),
-                new Process("P3",  5,11, 3, 4),
-                new Process("P4", 15,4,  6, 6)
-        ));
-/*
+
         simulateShortestJobFirstScheduling(List.of(
                 new Process("A", 0, 10, 0),
                 new Process("B", 1, 8, 0),
@@ -29,22 +23,7 @@ public class CPUSchedulersSimulator {
                 new Process("D", 6, 8, 0),
                 new Process("E", 8, 10, 0)
         ));
-*/
-    }
 
-    private static void simulateAGScheduling(List<Process> allProcesses) {
-        CPUScheduler agScheduler = new AGScheduler();
-
-        agScheduler.start(allProcesses);
-
-        for (Interval interval : agScheduler.executionOrder) {
-            System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] ");
-        }
-        if (agScheduler.executionOrder.size() > 0)
-            System.out.println(agScheduler.executionOrder.get(agScheduler.executionOrder.size() - 1).getEnd());
-
-        calculateWaitingTime(allProcesses);
-        calculateTurnAround(allProcesses);
     }
 
 
