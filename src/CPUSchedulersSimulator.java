@@ -35,16 +35,13 @@ public class CPUSchedulersSimulator {
 
     private static void simulateShortestJobFirstScheduling(List<Process> allProcesses) {
         System.out.println("==================================================================");
-        System.out.println("==    Preemptive Shortest Job First  (With context switching)   ==");
+        System.out.println("      Preemptive Shortest Job First  (With context switching)     ");
         System.out.println("==================================================================");
 
         CPUScheduler sjfScheduler = new ShortestJobFirstScheduler();
 
-        System.out.print("Context switching cost = ");
-        int cs = Integer.parseInt(scanner.nextLine());
-
         sjfScheduler.start(allProcesses);
-        sjfScheduler.addContextSwitching(cs);
+        sjfScheduler.addContextSwitching(1);
 
         for (Interval interval : sjfScheduler.executionOrder) {
             System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] " + interval.getEnd() + " | ");
@@ -57,7 +54,7 @@ public class CPUSchedulersSimulator {
 
     private static void simulateRoundRobinScheduling(List<Process> allProcesses) {
         System.out.println("===============================================");
-        System.out.println("==    Round Robin  (With context switching)  ==");
+        System.out.println("      Round Robin  (With context switching)    ");
         System.out.println("===============================================");
 
         CPUScheduler rrScheduler = new RoundRobinScheduler(3);
@@ -76,7 +73,7 @@ public class CPUSchedulersSimulator {
 
     private static void simulatePriorityScheduling(List<Process> allProcesses) {
         System.out.println("===========================================");
-        System.out.println("==   Preemptive Priority  (With aging)   ==");
+        System.out.println("     Preemptive Priority  (With aging)     ");
         System.out.println("===========================================");
 
         CPUScheduler pScheduler = new PriorityScheduler(15);
@@ -95,7 +92,7 @@ public class CPUSchedulersSimulator {
 
     private static void simulateAGScheduling(List<Process> allProcesses) {
         System.out.println("============");
-        System.out.println("==   AG   ==");
+        System.out.println("     AG     ");
         System.out.println("============");
 
         AGScheduler agScheduler = new AGScheduler();
