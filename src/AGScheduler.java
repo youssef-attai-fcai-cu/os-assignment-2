@@ -1,115 +1,216 @@
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Deque;
 import java.util.List;
 
-public class AGScheduler extends CPUScheduler {
-    private AGMode mode = AGMode.FCFS;
+public class AGScheduler {
+    List<Process> readyQueue = new ArrayList<>();
+    int currentTime = 0;
+    Process running = null;
+    int finished = 0;
+    AGMode mode = AGMode.FCFS;
 
-    @Override
-    protected void step(List<Process> processes) {
-//        Check if a process arrived
+    public void start(List<Process> processes) {
+        while (finished != processes.size()) {
+            System.out.println("====================");
+            System.out.println("current time = " + currentTime);
+            step(processes);
+            currentTime++;
+            if (currentTime == 40) System.exit(0);
+        }
+    }
+
+    private void step(List<Process> processes) {
         for (Process p : processes) {
-            if (p.arrivalTime == this.currentTime) {
-                this.readyQueue.add(p);
+//        Did any process arrive?
+            if (p.arrivalTime == currentTime) {
+//            If so, add it to the ready queue
+                readyQueue.add(p);
+//                LOG
                 System.out.println(p.name + " has arrived");
             }
         }
-
-        if (mode == AGMode.FCFS) {
-            System.out.println("Current mode: FCFS");
-        } else if (mode == AGMode.NPP) {
-            System.out.println("Current mode: NPP");
-            sortByPriority(this.readyQueue);
-        } else if (mode == AGMode.PSJF) {
-            System.out.println("Current mode: PSJF");
-            sortByRemainingTime(this.readyQueue);
-        }
-
+//        LOG
         printReadyQueue();
 
-//        Get the current running process
-        Process currentRunningProcess = this.readyQueue.peek();
-        assert currentRunningProcess != null;
-        System.out.println("Current: " + currentRunningProcess.name);
+//    If there is no running process
+        if (running == null) {
+//            LOG
+            System.out.println("No processes are running");
 
-//        If the current process has just started at this point in time
-        if (this.executionOrder.size() == 0 || !currentRunningProcess.name.equals(this.executionOrder.get(this.executionOrder.size() - 1).getProcessName())) {
-            currentRunningProcess.varQuantum = 0;
-//            Update the end of the last added interval
-            if (this.executionOrder.size() > 0)
-                this.executionOrder.get(this.executionOrder.size() - 1).setEnd(this.currentTime);
-//            Create an interval for the process, and add it to the execution order
-            Interval interval = new Interval(currentRunningProcess);
-            interval.setStart(this.currentTime);
-            this.executionOrder.add(interval);
-        } else {
-//            Update the end of the last added interval
-            if (this.executionOrder.size() > 0)
-                this.executionOrder.get(this.executionOrder.size() - 1).setEnd(this.currentTime);
+//        Run the next process in ready queue
+            running = readyQueue.get(0);
+            readyQueue.remove(running);
+
+//            LOG
+            System.out.println(running.name + " started running");
+            printReadyQueue();
+
+//        Reset AG mode to First come, first served
+            mode = AGMode.FCFS;
+
+//            LOG
+            System.out.println("AG Mode switched to " + mode);
+
+//        Update remaining time and varQuantum if time is past 0
+            if (currentTime > 0) {
+                running.remainingTime--;
+
+//                LOG
+                System.out.println(running.name + "'s remaining time is now " + running.remainingTime);
+
+                running.varQuantum++;
+
+//                LOG
+                System.out.println(running.name + "'s Quantum is " + running.quantum);
+                System.out.println(running.name + "'s varQuantum is now " + running.varQuantum);
+
+//            If running process finished, skip AG mode switching and go to next iteration
+                if (running.remainingTime == 0) {
+                    running.quantum = 0;
+                    finished++;
+
+//                LOG
+                    System.out.println(running.name + " finished");
+
+//                Reset running
+                    running = null;
+
+                    return;
+                }
+            }
         }
-//        Update the remaining time of the process at the top of the process queue
-        currentRunningProcess.remainingTime--;
-        currentRunningProcess.varQuantum++;
-        System.out.println(currentRunningProcess.name + "'s var quantum: " + currentRunningProcess.varQuantum);
+//    Otherwise, if there is an already running process
+        else {
+//            LOG
+            System.out.println(running.name + " is running");
 
-        if (currentRunningProcess.varQuantum == (int) Math.ceil(currentRunningProcess.quantum / (double) 4)) {
-            this.mode = AGMode.NPP;
-            System.out.println("Switched to NPP");
-        } else if (currentRunningProcess.varQuantum == (int) Math.ceil(currentRunningProcess.quantum / (double) 2)) {
-            this.mode = AGMode.PSJF;
-            System.out.println("Switched to PSJF");
-        } else if (currentRunningProcess.varQuantum == currentRunningProcess.quantum) {
-            this.mode = AGMode.FCFS;
-            System.out.println("Switched to FCFS");
+//        Update remaining time and varQuantum if time is past 0
+            if (currentTime > 0) {
+                running.remainingTime--;
 
+//                LOG
+                System.out.println(running.name + "'s remaining time is now " + running.remainingTime);
+
+                running.varQuantum++;
+
+//                LOG
+                System.out.println(running.name + "'s Quantum is " + running.quantum);
+                System.out.println(running.name + "'s varQuantum is now " + running.varQuantum);
+
+//            If running process finished
+                if (running.remainingTime == 0) {
+//                Skip AG mode switching and go to next iteration
+                    running.quantum = 0;
+                    finished++;
+
+//                    LOG
+                    System.out.println(running.name + " finished");
+
+//                Reset running
+                    running = null;
+
+                    return;
+                }
+            }
+
+//        Did varQuantum reach 25% of quantum?
+            if (running.varQuantum == (int) Math.ceil(running.quantum / 4.0f)) {
+//                LOG
+                System.out.println(running.name + " varQuantum reached " + running.varQuantum + " which is ceil(25% of " + running.quantum + ")");
+
+//            Switch AG mode to Non-preemptive priority
+                mode = AGMode.NPP;
+
+//                LOG
+                System.out.println("AG Mode switched to " + mode);
+
+//            Push running process to back of ready queue
+                readyQueue.add(running);
+
+//                LOG
+                printReadyQueue();
+
+//            Get next process (with the highest priority from ready queue)
+                Process next = readyQueue.get(getHighestPriorityIndex());
+
+//                LOG
+                System.out.println("Next is " + next.name);
+
+//            If current process does NOT have the highest priority
+                if (next != running) {
+//                Adjust quantum of running process
+                    running.quantum += (int) Math.ceil((running.quantum - running.varQuantum) / 2.0f);
+                    running.varQuantum = 0;
+
+                    running = next;
+
+//                LOG
+                    printReadyQueue();
+                }
+
+//            Remove running process from ready queue
+                readyQueue.remove(running);
+            }
+//        Or did varQuantum reach 50% of quantum?
+            else if (running.varQuantum == (int) Math.ceil(running.quantum / 2.0f)) {
+//                LOG
+                System.out.println(running.name + " varQuantum reached " + running.varQuantum + " which is ceil(50% of " + running.quantum + ")");
+
+//            Switch AG mode to Preemptive shortest job first
+                mode = AGMode.PSJF;
+
+//                LOG
+                System.out.println("AG Mode switched to " + mode);
+
+//                Push running process to back of ready queue
+                readyQueue.add(running);
+
+//                LOG
+                printReadyQueue();
+
+//            Get next process (with the highest priority from ready queue)
+                Process next = readyQueue.get(getShortestJobIndex());
+
+//                LOG
+                System.out.println("Next is " + next.name);
+
+//            If current process does NOT have the highest priority
+                if (next != running) {
+//                Adjust quantum of running process
+                    running.quantum += (running.quantum - running.varQuantum);
+                    running.varQuantum = 0;
+
+                    running = next;
+
+//                LOG
+                    printReadyQueue();
+                }
+
+//            Remove running process from ready queue
+                readyQueue.remove(running);
+            }
         }
-
-//        if (currentRunningProcess.varQuantum == currentRunningProcess.quantum && currentRunningProcess.remainingTime != 0 && currentRunningProcess.remainingTime != currentRunningProcess.burstTime) {
-//            currentRunningProcess.quantum += 2;
-//            currentRunningProcess.varQuantum = 0;
-//            this.readyQueue.poll();
-//            this.readyQueue.add(currentRunningProcess);
-//        }
-//        else if (mode == AGMode.NPP && currentRunningProcess.varQuantum != currentRunningProcess.quantum) {
-//            currentRunningProcess.quantum += (currentRunningProcess.quantum - currentRunningProcess.varQuantum) / 2;
-//            currentRunningProcess.varQuantum = 0;
-//            this.readyQueue.poll();
-//            this.readyQueue.add(currentRunningProcess);
-//        }
-//        else if (mode == AGMode.PSJF && currentRunningProcess.varQuantum != currentRunningProcess.quantum) {
-//            currentRunningProcess.quantum += currentRunningProcess.quantum - currentRunningProcess.varQuantum;
-//            currentRunningProcess.varQuantum = 0;
-//            this.readyQueue.poll();
-//            this.readyQueue.add(currentRunningProcess);
-//        }
-//        else if (currentRunningProcess.varQuantum != currentRunningProcess.quantum && currentRunningProcess.remainingTime == 0){
-//            currentRunningProcess.quantum = 0;
-//        }
-
-
-//        System.out.println("Process " + currentRunningProcess.name + " remaining time: " + currentRunningProcess.remainingTime);
-
-        if (currentRunningProcess.remainingTime == 0) {
-            currentRunningProcess.turnAroundTime = currentTime - currentRunningProcess.arrivalTime + 1;
-            currentRunningProcess.waitingTime = currentRunningProcess.turnAroundTime - currentRunningProcess.burstTime;
-            this.readyQueue.poll();
-            this.finished++;
-        }
-
     }
 
-    private void sortByRemainingTime(Deque<Process> processes) {
-        List<Process> ps = new ArrayList<>(processes.stream().sorted(Comparator.comparingInt(o -> o.remainingTime)).toList());
-        processes.clear();
-//        Collections.reverse(ps);
-        processes.addAll(ps);
+    private void printReadyQueue() {
+        System.out.print("Ready queue: ");
+        for (Process p : readyQueue)
+            System.out.print(p.name + " ");
+        System.out.println();
     }
 
-    private void sortByPriority(Deque<Process> processes) {
-        List<Process> ps = new ArrayList<>(processes.stream().sorted(Comparator.comparingInt(o -> o.priority)).toList());
-        processes.clear();
-//        Collections.reverse(ps);
-        processes.addAll(ps);
+    private int getHighestPriorityIndex() {
+        int highestPriorityIdx = 0;
+        for (int i = 0; i < readyQueue.size(); i++)
+            if (readyQueue.get(i).priority < readyQueue.get(highestPriorityIdx).priority)
+                highestPriorityIdx = i;
+        return highestPriorityIdx;
+    }
+
+    private int getShortestJobIndex() {
+        int shortestJobIdx = 0;
+        for (int i = 0; i < readyQueue.size(); i++)
+            if (readyQueue.get(i).remainingTime < readyQueue.get(shortestJobIdx).remainingTime)
+                shortestJobIdx = i;
+        return shortestJobIdx;
     }
 }
