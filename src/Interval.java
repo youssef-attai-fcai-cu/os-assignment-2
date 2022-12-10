@@ -1,5 +1,5 @@
 public class Interval {
-    private final Process process;
+    public final Process process;
     private int start;
     private int end;
 
