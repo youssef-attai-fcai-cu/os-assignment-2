@@ -8,9 +8,9 @@ public class CPUSchedulersSimulator {
         simulateShortestJobFirstScheduling(List.of(
                 new Process("A", 0, 10, 0),
                 new Process("B", 1, 8, 0),
-                new Process("C", 2, 6, 0),
-                new Process("D", 3, 4, 0),
-                new Process("E", 4, 2, 0)
+                new Process("C", 2, 6, 0)
+//                new Process("D", 3, 4, 0),
+//                new Process("E", 4, 2, 0)
         ));
         simulateRoundRobinScheduling(List.of(
                 new Process("A", 0, 2, 0),
@@ -20,9 +20,9 @@ public class CPUSchedulersSimulator {
                 new Process("E", 8, 10, 0)
         ));
         simulatePriorityScheduling(List.of(
-                new Process("A", 0, 200, 2),
-                new Process("B", 1, 200, 1),
-                new Process("C", 2, 200, 0),
+                new Process("A", 0, 20, 2),
+                new Process("B", 1, 20, 1),
+                new Process("C", 2, 20, 0),
                 new Process("D", 3, 10, 3)
         ));
         simulateAGScheduling(List.of(
@@ -38,10 +38,10 @@ public class CPUSchedulersSimulator {
         System.out.println("      Preemptive Shortest Job First  (With context switching)     ");
         System.out.println("==================================================================");
 
-        CPUScheduler sjfScheduler = new ShortestJobFirstScheduler();
+        int cs = 1;
+        CPUScheduler sjfScheduler = new ShortestJobFirstScheduler(cs);
 
         sjfScheduler.start(allProcesses);
-        sjfScheduler.addContextSwitching(1);
 
         for (Interval interval : sjfScheduler.executionOrder) {
             System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] " + interval.getEnd() + " | ");

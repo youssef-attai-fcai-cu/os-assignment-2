@@ -14,8 +14,7 @@ public abstract class CPUScheduler {
 //        System.out.println("Scheduling started");
         do {
 //            System.out.println("=======================");
-//            System.out.println("time " + this.currentTime + ":");
-////            System.out.println("=======================");
+//            System.out.println("current time " + this.currentTime + ":");
             this.step(processes);
             this.currentTime++;
         } while (processes.size() != this.finished);
