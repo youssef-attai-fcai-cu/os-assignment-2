@@ -41,6 +41,7 @@ public class AGScheduler {
             readyQueue.remove(running);
 
             if (executionOrder.size() == 0) {
+                printQuantums(processes);
                 executionOrder.add(new Interval(running));
                 executionOrder.get(0).setStart(currentTime);
             } else {
@@ -79,6 +80,8 @@ public class AGScheduler {
                     running.waitingTime = running.turnAroundTime - running.burstTime;
 
                     running.quantum = 0;
+                    printQuantums(processes);
+
                     finished++;
 
 //                LOG
@@ -121,6 +124,8 @@ public class AGScheduler {
 
 //                Skip AG mode switching and go to next iteration
                     running.quantum = 0;
+                    printQuantums(processes);
+
                     finished++;
 
 //                    LOG
@@ -162,6 +167,8 @@ public class AGScheduler {
 
 //                Adjust quantum of running process
                     running.quantum += (int) Math.ceil((running.quantum - running.varQuantum) / 2.0f);
+                    printQuantums(processes);
+
                     running.varQuantum = 0;
 
                     running = next;
@@ -203,6 +210,8 @@ public class AGScheduler {
 
 //                Adjust quantum of running process
                     running.quantum += (running.quantum - running.varQuantum);
+                    printQuantums(processes);
+
                     running.varQuantum = 0;
 
                     running = next;
@@ -217,6 +226,13 @@ public class AGScheduler {
                 readyQueue.remove(running);
             }
         }
+    }
+
+    private void printQuantums(List<Process> processes) {
+        System.out.print("Quantums = (");
+        for (Process p : processes)
+            System.out.print(p.quantum + ", ");
+        System.out.println(")");
     }
 
     private void printReadyQueue() {

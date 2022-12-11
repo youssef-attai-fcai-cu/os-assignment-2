@@ -17,6 +17,7 @@ public abstract class CPUScheduler {
 //            System.out.println("current time " + this.currentTime + ":");
             this.step(processes);
             this.currentTime++;
+            if (currentTime==100)System.exit(0);
         } while (processes.size() != this.finished);
     }
 

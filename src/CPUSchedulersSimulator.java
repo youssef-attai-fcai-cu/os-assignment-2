@@ -16,8 +16,7 @@ public class CPUSchedulersSimulator {
                 new Process("A", 0, 2, 0),
                 new Process("B", 2, 4, 0),
                 new Process("C", 4, 6, 0),
-                new Process("D", 6, 8, 0),
-                new Process("E", 8, 10, 0)
+                new Process("D", 6, 8, 0)
         ));
         simulatePriorityScheduling(List.of(
                 new Process("A", 0, 20, 2),
@@ -27,7 +26,7 @@ public class CPUSchedulersSimulator {
         ));
         simulateAGScheduling(List.of(
                 new Process("P1", 0, 17, 4, 7),
-                new Process("P2", 2, 6, 7, 12),
+                new Process("P2", 2, 6, 7, 9),
                 new Process("P3", 5, 11, 3, 4),
                 new Process("P4", 15, 4, 6, 6)
         ));
@@ -57,10 +56,11 @@ public class CPUSchedulersSimulator {
         System.out.println("      Round Robin  (With context switching)    ");
         System.out.println("===============================================");
 
-        CPUScheduler rrScheduler = new RoundRobinScheduler(3);
+        int cs = 1;
+        CPUScheduler rrScheduler = new RoundRobinScheduler(cs, 3);
 
         rrScheduler.start(allProcesses);
-        rrScheduler.addContextSwitching(1);
+//        rrScheduler.addContextSwitching(1);
 
         for (Interval interval : rrScheduler.executionOrder) {
             System.out.print(interval.getStart() + " [" + interval.getProcessName() + "] " + interval.getEnd() + " | ");
