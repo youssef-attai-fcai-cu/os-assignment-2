@@ -3,76 +3,82 @@ import java.util.List;
 public class RoundRobinScheduler extends CPUScheduler {
     public final int Q;
     private int counter = 0;
+    private int contextSwitching;
+    private int varContextSwitching = 0;
+    private Process running = null;
 
-    public RoundRobinScheduler(int q) {
-        this.Q = q;
+    public RoundRobinScheduler(int contextSwitchingCost, int q) {
+        Q = q;
+        contextSwitching = contextSwitchingCost;
     }
 
     public void start(List<Process> processes) {
         super.start(processes);
-        if (this.executionOrder.size() > 0)
-            this.executionOrder.get(this.executionOrder.size() - 1).setEnd(this.currentTime);
+        if (executionOrder.size() > 0)
+            executionOrder.get(executionOrder.size() - 1).setEnd(currentTime - 1);
     }
 
     @Override
     protected void step(List<Process> processes) {
-//        Check if a process arrived and push it to the process queue
         for (Process p : processes) {
-            if (p.arrivalTime == this.currentTime) {
-                this.readyQueue.add(p);
+            if (p.arrivalTime == currentTime) {
+                readyQueue.add(p);
 //                System.out.println(p.name + " has arrived");
             }
         }
 
-        if (this.counter == this.Q) {
-//            System.out.println("RR timeout");
-            this.readyQueue.add(this.readyQueue.poll());
-            this.counter = 0;
+        if (varContextSwitching > 0) {
+//            System.out.println("Switching...");
+            varContextSwitching--;
+            return;
         }
 
-//        printReadyQueue();
+        if (running == null) {
+//            System.out.println("No process is running");
+            running = readyQueue.poll();
+            assert running != null;
+            if (executionOrder.size() == 0) {
+                Interval interval = new Interval(running);
+                interval.setStart(currentTime);
+                executionOrder.add(interval);
+            } else if (executionOrder.get(executionOrder.size() - 1).process != running) {
+                executionOrder.get(executionOrder.size() - 1).setEnd(currentTime - contextSwitching - 1);
 
-//        Get the current running process
-        Process currentRunningProcess = this.readyQueue.peek();
-        assert currentRunningProcess != null;
-//        System.out.println("Currently processing: " + currentRunningProcess.name);
+                Interval interval = new Interval(running);
 
-        if (
-//                If this is the first process
-                this.executionOrder.size() == 0 ||
-//                        Or if this is a different process than the last added in execution order
-                        !currentRunningProcess.name.equals(
-                                this.executionOrder.get(this.executionOrder.size() - 1).getProcessName()
-                        )
-        ) {
-//            Update the end of the last added interval
-            if (this.executionOrder.size() > 0)
-                this.executionOrder.get(this.executionOrder.size() - 1).setEnd(this.currentTime);
-//            Create an interval for the process, and add it to the execution order
-            Interval interval = new Interval(currentRunningProcess);
-            interval.setStart(this.currentTime);
-            this.executionOrder.add(interval);
-        } else {
-//            Update the end of the last added interval
-            if (this.executionOrder.size() > 0)
-                this.executionOrder.get(this.executionOrder.size() - 1).setEnd(this.currentTime);
+                interval.setStart(currentTime - 1);
+                executionOrder.add(interval);
+            }
         }
 
-//        Update the remaining time of the process at the top of the process queue
-        currentRunningProcess.remainingTime--;
-        this.counter++;
-//        System.out.println(currentRunningProcess.name + " remaining time: " + currentRunningProcess.remainingTime);
-//        System.out.println("counter: " + this.counter);
-//        System.out.println("Process " + currentRunningProcess.name + " remaining time: " + currentRunningProcess.remainingTime);
+//        System.out.println(running.name + " is now running");
 
-        if (currentRunningProcess.remainingTime == 0) {
-            currentRunningProcess.turnAroundTime = currentTime - currentRunningProcess.arrivalTime + 1;
-            currentRunningProcess.waitingTime = currentRunningProcess.turnAroundTime - currentRunningProcess.burstTime;
-            Process done = this.readyQueue.poll();
-            assert done != null;
-//            System.out.println(done.name + " is done");
-            this.counter = 0;
-            this.finished++;
+        if (currentTime > 0) {
+            running.remainingTime--;
+            counter++;
+
+//            System.out.println(running.name + "'s remaining time = " + running.remainingTime);
+//            System.out.println("counter = " + counter);
+            if (running.remainingTime == 0) {
+                running.turnAroundTime = currentTime - running.arrivalTime;
+                running.waitingTime = running.turnAroundTime - running.burstTime;
+//                System.out.println(running.name + " finished");
+                running = null;
+                varContextSwitching = contextSwitching;
+                counter = 0;
+                finished++;
+                return;
+            }
+
+            if (counter == Q) {
+                counter = 0;
+                readyQueue.add(running);
+                running = null;
+                varContextSwitching = contextSwitching;
+//                System.out.println("RR timeout");
+//                System.out.println("counter = " + counter);
+
+            }
         }
     }
 }
